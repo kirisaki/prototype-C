@@ -19,6 +19,7 @@ NUM     { TkNum ($$, _) }
 VARSYM  { TkVarSym ($$, _) }
 VARID   { TkVarId ($$, _) }
 ';'     { TkSep _ }
+'='     { TkEqual _ }
 '('     { TkLParen _ }
 ')'     { TkRParen _ }
 '\\'    { TkLambda _ }
@@ -28,11 +29,21 @@ VARID   { TkVarId ($$, _) }
 
 %%
 program :: { Expr }
-program:        exp        { $1 }
+program
+  : decls { withDummy $ Let $1 (withDummy $ Var "main") }
 
-exp :: { Expr }
-exp
-  : exp term %prec APPLY { withDummy $ Apply $1 $2 }
+decls :: { [Decl] }
+decls
+  : decl ';' decls { $1 : $3 }
+  | decl { [$1] }
+
+decl :: { Decl }
+decl
+  : VARID '=' expr { Decl $1 $3 }
+
+expr :: { Expr }
+expr
+  : expr term %prec APPLY { withDummy $ Apply $1 $2 }
   | term { $1 }
 
 term :: { Expr }
@@ -40,7 +51,7 @@ term
   : lambda                    { $1 }
   | varid                      { $1 }
   | num                       { $1 }
-  | '(' exp ')'               { $2 }
+  | '(' expr ')'               { $2 }
 
 varid :: { Expr }
 varid
@@ -53,7 +64,7 @@ num
 
 lambda :: { Expr }
 lambda
-  : '\\' VARID '->' exp { withDummy $ Lambda $2 $4 }
+  : '\\' VARID '->' expr { withDummy $ Lambda $2 $4 }
 
 
 {

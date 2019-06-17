@@ -22,6 +22,7 @@ tokens :-
   $white+                       { skip }
   $digit+                       { mkLx LxNum }
   \;                            { mkLx LxSep }
+  \=                            { mkLx LxEqual }
   \(                            { mkLx LxLParen }
   \)                            { mkLx LxRParen }
   \\                            { mkLx LxLambda }
@@ -33,6 +34,7 @@ tokens :-
 data Lexeme
   = LxWhite
   | LxSep
+  | LxEqual
   | LxLParen
   | LxRParen
   | LxVarSym
@@ -45,6 +47,7 @@ data Lexeme
 data Token
   = TkWhite AlexPosn
   | TkSep AlexPosn
+  | TkEqual AlexPosn
   | TkLParen AlexPosn
   | TkRParen AlexPosn
   | TkVarSym ((String, Int, OpAssoc), AlexPosn)
@@ -63,6 +66,7 @@ mkLx lx (pos, _, _, str) len =
     case lx of
       LxWhite -> pure $ TkWhite pos
       LxSep -> pure $ TkSep pos
+      LxEqual -> pure $ TkEqual pos
       LxLParen -> pure $ TkLParen pos
       LxRParen -> pure $ TkRParen pos
       LxVarId  -> pure $ TkVarId (t, pos)

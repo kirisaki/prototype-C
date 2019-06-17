@@ -5,6 +5,7 @@ data Expr'
   | Lambda String Expr
   | Var String
   | Lit Lit
+  | Let [Decl] Expr
   deriving (Eq)
 
 newtype Lit = LitInt Int deriving (Show, Eq)
@@ -14,6 +15,7 @@ instance Show Expr' where
   show (Lambda x expr) = "(Lambda \"" <> x <> "\" " <> show expr <> ")"
   show (Var x) = "(Var \"" <> x <> "\")"
   show (Lit v) = "(Lit " <> show v <> ")"
+  show (Let ds e) = show ds <> show e
 
 data Located a = At Position a deriving (Eq, Show)
 
@@ -44,3 +46,7 @@ instance Show Value where
 
 withDummy :: a -> Located a
 withDummy = At Dummy
+
+data Decl
+  = Decl String Expr
+  deriving (Eq, Show)
