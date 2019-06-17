@@ -1,5 +1,6 @@
 module Types where
 
+
 data Expr'
   = Apply Expr Expr
   | Lambda String Expr
@@ -8,7 +9,10 @@ data Expr'
   | Let [Decl] Expr
   deriving (Eq)
 
-newtype Lit = LitInt Int deriving (Show, Eq)
+data Lit
+  = LitInt Int
+  | LitBool Bool
+  deriving (Show, Eq)
 
 instance Show Expr' where
   show (Apply x y) = "(Apply" <> show x <> show y <> ")"
@@ -29,6 +33,7 @@ type Expr = Located Expr'
 
 data Type
   = TyVar String
+  | TyCon String
   | TyFun Type Type
   deriving (Show, Eq, Ord)
 
@@ -50,3 +55,10 @@ withDummy = At Dummy
 data Decl
   = Decl String Expr
   deriving (Eq, Show)
+
+data Scheme = Forall [String] Type deriving(Show, Eq,Ord)
+
+tyInt, tyBool :: Type
+tyInt = TyCon "Int"
+tyBool = TyCon "Bool"
+
