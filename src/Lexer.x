@@ -7,6 +7,7 @@ module Lexer where
 
 import Control.Monad.State
 import qualified Data.Map.Strict as MA
+import Debug.Trace
 }
 
 %wrapper "monadUserState"
@@ -19,16 +20,18 @@ $symbol = [\+\-\*\/]
 
 tokens :-
 
-  $white+                       { skip }
-  $digit+                       { mkLx LxNum }
-  \;                            { mkLx LxSep }
-  \=                            { mkLx LxEqual }
-  \(                            { mkLx LxLParen }
-  \)                            { mkLx LxRParen }
-  \\                            { mkLx LxLambda }
-  \-\>                          { mkLx LxArrow }
-  $smallalpha$alpha*            { mkLx LxVarId }
-  [\=\+\-\*\/\^]                { mkLx LxVarSym }
+<0>  $white+                       { skip }
+<0>  $digit+                       { mkLx LxNum }
+<0>  \;                            { mkLx LxSep }
+<0>  \=                            { mkLx LxEqual }
+<0>  \(                            { mkLx LxLParen }
+<0>  \)                            { mkLx LxRParen }
+<0>  \\                            { mkLx LxLambda }
+<0>  \-\>                          { mkLx LxArrow }
+<0>  [\=\+\-\*\/\^]                { mkLx LxVarSym }
+<0>  let                            { mkLx LxLet }
+<0>  in                            { mkLx LxIn }
+<0>  $smallalpha$alpha*            { mkLx LxVarId }
 
 {
 data Lexeme
@@ -42,6 +45,8 @@ data Lexeme
   | LxNum
   | LxLambda
   | LxArrow
+  | LxLet
+  | LxIn
   deriving (Eq, Show)
 
 data Token
@@ -55,6 +60,8 @@ data Token
   | TkNum (Integer, AlexPosn)
   | TkLambda AlexPosn
   | TkArrow AlexPosn
+  | TkLet AlexPosn
+  | TkIn AlexPosn
   | TkEof
   deriving (Eq, Show)
 
@@ -72,6 +79,8 @@ mkLx lx (pos, _, _, str) len =
       LxVarId  -> pure $ TkVarId (t, pos)
       LxLambda  -> pure $ TkLambda pos
       LxArrow  -> pure $ TkArrow pos
+      LxLet  -> pure $ TkLet pos
+      LxIn  -> pure $ TkIn pos
       LxVarSym -> Alex $ (\s@AlexState{..} ->
                           case MA.lookup t (operators alex_ust) of
                             Just (n, asoc) -> Right (s, TkVarSym ((t, fromIntegral n, asoc), pos))

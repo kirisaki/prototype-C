@@ -5,6 +5,7 @@ import Lexer
 import Types
 import qualified Data.Map.Strict as MA
 import qualified Data.Set as SE
+import Debug.Trace
 }
 
 %name parser
@@ -24,8 +25,11 @@ VARID   { TkVarId ($$, _) }
 ')'     { TkRParen _ }
 '\\'    { TkLambda _ }
 '->'    { TkArrow _ }
+'let'    { TkLet _ }
+'in'    { TkIn _ }
 
 %left APPLY
+%nonassoc DECL
 
 %%
 program :: { Expr }
@@ -34,22 +38,24 @@ program
 
 decls :: { [Decl] }
 decls
-  : decl ';' decls { $1 : $3 }
-  | decl { [$1] }
+  : decl ';' decls %prec DECL { $1 <> $3 }
+  | decl ';' { $1 }
+  | decl { $1 }
 
-decl :: { Decl }
+decl :: { [Decl] }
 decl
-  : VARID '=' expr { Decl $1 $3 }
+  : VARID '=' expr { [Decl $1 $3] }
 
 expr :: { Expr }
 expr
-  : expr term %prec APPLY { withDummy $ Apply $1 $2 }
+  : expr expr %prec APPLY { withDummy $ Apply $1 $2 }
   | term { $1 }
+  | lambda                    { $1 }
+  | 'let' decls 'in' expr { withDummy $ Let $2 $4 }
 
 term :: { Expr }
 term
-  : lambda                    { $1 }
-  | varid                      { $1 }
+  : varid                      { $1 }
   | num                       { $1 }
   | '(' expr ')'               { $2 }
 

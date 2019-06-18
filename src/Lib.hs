@@ -153,14 +153,10 @@ bind a t | t == TyVar a = pure MA.empty
 
 occurs :: String -> Type -> Bool
 occurs a t = SE.member a (ftv t)
-  where
-    ftv TyCon{}         = SE.empty
-    ftv (TyVar a)       = SE.singleton a
-    ftv (TyFun  t1 t2) = SE.union (ftv t1) (ftv t2)
 
 someFunc :: IO ()
 someFunc = do
-  let s0 = "g = f; main = (\\x -> \\y -> f x y)"
+  let s0 = "main = let g = f; h = g in \\x -> \\y -> h x y"
   let p = alexSetUserState (AlexUserState MA.empty) >> parser
   let Right t0 = runAlex s0 p
   print t0
