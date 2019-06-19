@@ -7,6 +7,7 @@ data Expr'
   | Var String
   | Lit Lit
   | Let [Decl] Expr
+  | If Expr Expr Expr
   deriving (Eq)
 
 data Lit
@@ -19,6 +20,7 @@ instance Show Expr' where
   show (Lambda x expr) = "(Lambda \"" <> x <> "\" " <> show expr <> ")"
   show (Var x) = "(Var \"" <> x <> "\")"
   show (Lit v) = "(Lit " <> show v <> ")"
+  show (If c t f) = "(If " <> show c <> " then " <> show t <> " else " <> show f <> ")"
   show (Let ds e) = show ds <> show e
 
 data Located a = At Position a deriving (Eq, Show)

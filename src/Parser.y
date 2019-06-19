@@ -25,9 +25,13 @@ VARID   { TkVarId ($$, _) }
 ')'     { TkRParen _ }
 '\\'    { TkLambda _ }
 '->'    { TkArrow _ }
+'if'    { TkIf _ }
+'then'    { TkThen _ }
+'else'    { TkElse _ }
 'let'    { TkLet _ }
 'in'    { TkIn _ }
 
+%right IF
 %left APPLY
 %nonassoc DECL
 
@@ -48,7 +52,8 @@ decl
 
 expr :: { Expr }
 expr
-  : expr expr %prec APPLY { withDummy $ Apply $1 $2 }
+  : 'if' expr 'then' expr 'else' expr %prec IF { withDummy $ If $2 $4 $6 }
+  | expr expr %prec APPLY { withDummy $ Apply $1 $2 }
   | term { $1 }
   | lambda                    { $1 }
   | 'let' decls 'in' expr { withDummy $ Let $2 $4 }

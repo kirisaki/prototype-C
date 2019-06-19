@@ -29,6 +29,9 @@ tokens :-
 <0>  \\                            { mkLx LxLambda }
 <0>  \-\>                          { mkLx LxArrow }
 <0>  [\=\+\-\*\/\^]                { mkLx LxVarSym }
+<0>  if                            { mkLx LxIf }
+<0>  then                            { mkLx LxThen }
+<0>  else                            { mkLx LxElse }
 <0>  let                            { mkLx LxLet }
 <0>  in                            { mkLx LxIn }
 <0>  $smallalpha$alpha*            { mkLx LxVarId }
@@ -45,6 +48,9 @@ data Lexeme
   | LxNum
   | LxLambda
   | LxArrow
+  | LxIf
+  | LxThen
+  | LxElse
   | LxLet
   | LxIn
   deriving (Eq, Show)
@@ -60,6 +66,9 @@ data Token
   | TkNum (Integer, AlexPosn)
   | TkLambda AlexPosn
   | TkArrow AlexPosn
+  | TkIf AlexPosn
+  | TkThen AlexPosn
+  | TkElse AlexPosn
   | TkLet AlexPosn
   | TkIn AlexPosn
   | TkEof
@@ -79,6 +88,9 @@ mkLx lx (pos, _, _, str) len =
       LxVarId  -> pure $ TkVarId (t, pos)
       LxLambda  -> pure $ TkLambda pos
       LxArrow  -> pure $ TkArrow pos
+      LxIf  -> pure $ TkIf pos
+      LxThen  -> pure $ TkThen pos
+      LxElse  -> pure $ TkElse pos
       LxLet  -> pure $ TkLet pos
       LxIn  -> pure $ TkIn pos
       LxVarSym -> Alex $ (\s@AlexState{..} ->

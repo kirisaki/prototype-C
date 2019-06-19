@@ -109,6 +109,12 @@ infer = \case
     tv <- fresh
     pure (tv, c1 <> c2 <> [(t1, TyFun t2 tv)])
 
+  At _ (If cond tr fl) -> do
+    (t1, c1) <- infer cond
+    (t2, c2) <- infer tr
+    (t3, c3) <- infer fl
+    pure (t2, c1 <> c2 <> c3 <> [(t1, TyCon "Bool"), (t2, t3)])
+    
   At _ (Let ds e') -> do
     env <- ask
     (xs, ts, subs, cs) <- L.unzip4 <$>
@@ -156,7 +162,8 @@ occurs a t = SE.member a (ftv t)
 
 someFunc :: IO ()
 someFunc = do
-  let s0 = "main = let g = f; h = g in \\x -> \\y -> h x y"
+  --let s0 = "main = let g = f ; y = 1 in \\x -> g x y"
+  let s0 = "main = \\x -> let g = \\x -> x in if g x then g 3 else 1"
   let p = alexSetUserState (AlexUserState MA.empty) >> parser
   let Right t0 = runAlex s0 p
   print t0
