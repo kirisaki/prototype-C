@@ -63,7 +63,7 @@ instance Substitutable a => Substitutable [a] where
 instance Substitutable Env where
   apply s env = MA.map (apply s) env
   ftv env = ftv $ MA.elems env
-  
+
 lookupEnv :: String -> Infer Type
 lookupEnv x = do
   env <- ask
@@ -77,7 +77,7 @@ fresh = do
     put $ s + 1
     pure . TyVar $ show s
 
-  
+
 instantiate ::  Scheme -> Infer Type
 instantiate (Forall as t) = do
     as' <- mapM (const fresh) as
@@ -114,7 +114,7 @@ infer = \case
     (t2, c2) <- infer tr
     (t3, c3) <- infer fl
     pure (t2, c1 <> c2 <> c3 <> [(t1, TyCon "Bool"), (t2, t3)])
-    
+
   At _ (Let ds e') -> do
     env <- ask
     (xs, ts, subs, cs) <- L.unzip4 <$>
@@ -162,8 +162,9 @@ occurs a t = SE.member a (ftv t)
 
 someFunc :: IO ()
 someFunc = do
-  --let s0 = "main = let g = f ; y = 1 in \\x -> g x y"
-  let s0 = "main = \\x -> let g = \\x -> x in if g x then g 3 else 1"
+  let s0 = "main = let x = 1 in f x x"
+  --let s0 = "main = \\x -> let f = \\x -> x in if f x then f 3 else 1"
+  --let s0 = "main = let g = \\x -> f (g x) in \\x -> g x"
   let p = alexSetUserState (AlexUserState MA.empty) >> parser
   let Right t0 = runAlex s0 p
   print t0

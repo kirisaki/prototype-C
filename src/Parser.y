@@ -53,7 +53,7 @@ decl
 expr :: { Expr }
 expr
   : 'if' expr 'then' expr 'else' expr %prec IF { withDummy $ If $2 $4 $6 }
-  | expr expr %prec APPLY { withDummy $ Apply $1 $2 }
+  | expr term %prec APPLY { withDummy $ Apply $1 $2 }
   | term { $1 }
   | lambda                    { $1 }
   | 'let' decls 'in' expr { withDummy $ Let $2 $4 }
